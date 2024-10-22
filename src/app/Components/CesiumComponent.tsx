@@ -11,10 +11,12 @@ import 'cesium/Build/Cesium/Widgets/widgets.css';
 
 export const CesiumComponent: React.FunctionComponent<{
     CesiumJs: CesiumType,
-    positions: Position[]
+    positions: Position[],
+    coordinates: number[][]
 }> = ({
     CesiumJs,
-    positions
+    positions,
+    coordinates
 }) => {
     const cesiumViewer = React.useRef<Viewer | null>(null);
     const cesiumContainerRef = React.useRef<HTMLDivElement>(null);
@@ -26,10 +28,10 @@ export const CesiumComponent: React.FunctionComponent<{
         // No need for dependancies since all data is static for this example.
         if (cesiumViewer.current !== null) {
             cesiumViewer.current.scene.camera.setView({
-                destination: CesiumJs.Cartesian3.fromDegrees(-122.3472, 47.598, 370),
+                destination: CesiumJs.Cartesian3.fromDegrees(4.578568154397922, 54.79757982302541, 770000),
                 orientation: {
-                  heading: CesiumJs.Math.toRadians(10),
-                  pitch: CesiumJs.Math.toRadians(-10),
+                  heading: CesiumJs.Math.toRadians(90),
+                  pitch: CesiumJs.Math.toRadians(-90),
                 },
               });
         }
@@ -47,6 +49,28 @@ export const CesiumComponent: React.FunctionComponent<{
         });
         addedScenePrimitives.current = [];
     }, []);
+
+    const testPolygon = React.useCallback(async ()=>{
+        if(cesiumViewer.current !== null){
+            let coordinatesArray: number[] = []
+            coordinates.forEach(c => {
+                coordinatesArray.push(c[0])
+                coordinatesArray.push(c[1])
+            })
+
+            var poly = cesiumViewer.current?.entities.add({
+                polygon: {
+                  hierarchy: CesiumJs.Cartesian3.fromDegreesArray(coordinatesArray),
+                  height: 0,
+                  material: CesiumJs.Color.RED.withAlpha(0.5),
+                  outline: true,
+                  outlineColor: CesiumJs.Color.BLACK,
+                },
+            });
+
+            cesiumViewer.current?.zoomTo(poly)
+        }
+    },[positions])
     
     const initializeCesiumJs = React.useCallback(async () => {
         if (cesiumViewer.current !== null) {
@@ -78,6 +102,33 @@ export const CesiumComponent: React.FunctionComponent<{
                     }
                 });
             });
+
+            let coordinatesArray: number[] = []
+            coordinates.forEach(c => {
+                coordinatesArray.push(c[0])
+                coordinatesArray.push(c[1])
+            })
+
+            var poly = cesiumViewer.current?.entities.add({
+                name: "Apenas um teste",
+                description: "<p>Wyoming is the 10th most extensive, but the least populous \
+                and the second least densely populated of the 50 United \
+                States. The western two thirds of the state is covered mostly \
+                with the mountain ranges and rangelands in the foothills of \
+                the eastern Rocky Mountains, while the eastern third of the \
+                state is high elevation prairie known as the High Plains. \
+                Cheyenne is the capital and the most populous city in Wyoming, \
+                with a population estimate of 63,624 in 2017.</p>",
+                polygon: {
+                  hierarchy: CesiumJs.Cartesian3.fromDegreesArray(coordinatesArray),
+                  height: 0,
+                  material: CesiumJs.Color.RED.withAlpha(0.5),
+                  outline: true,
+                  outlineColor: CesiumJs.Color.BLACK,
+                },
+            });
+
+            // cesiumViewer.current?.zoomTo(poly)
 
             //Set loaded flag
             setIsLoaded(true);
